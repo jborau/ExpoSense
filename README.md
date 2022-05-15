@@ -1,2 +1,2 @@
 # ExpoSense
-Proyecto para las chicas de diseños
+Proyecto para un expositor golfo
