@@ -63,6 +63,11 @@ int showDistance()
   digitalWrite(trig, LOW);
   pulseDuration = pulseIn(eco, HIGH);
   distancia = pulseDuration / 58.2; // cte transformacion duracion to distancia
+  if (distancia < 0)
+  {
+    distancia = 300;
+  }
+
   return distancia;
 }
 
