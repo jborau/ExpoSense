@@ -12,7 +12,6 @@ int pinMotorDown = 3; // amarillo
 int pulseDuration;
 int distance;
 int showCount = 0;
-int hideCount = 0;
 int range = 25;
 bool hided = true;
 
