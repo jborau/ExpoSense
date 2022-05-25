@@ -1,118 +1,134 @@
 // Definimos puertos del arduino
 
 // Puertos del ultra sonidos
-int trig = 9;
-int eco = 10;
-int productUp = 5;
-int productDown = 7;
-int pinMotorUp = 4;   // rojo
-int pinMotorDown = 3; // amarillo
+int trig = 12;
+int eco = 13;
+int luces = 11;    // luces expositor
+int dirPin = 2;    // pin digital 8 de Arduino a IN1 de modulo controlador
+int stepPin = 3;   // pin digital 9 de Arduino a IN2 de modulo controlador
+int enablePin = 4; // pin digital 10 de Arduino a IN3 de modulo controlador
+int altura = 5000; // pin digital 11 de Arduino a IN4 de modulo controlador
 
 // Definimos variables a usar
-int pulseDuration;
-int distance;
-int showCount = 0;
-int range = 25;
-bool hided = true;
+int duracionPulso;
+int distancia;
+int contador = 0;
+int rango = 25;
+bool escondido = true;
+// altura de lo que queremos que suba
+bool subir;
 
 void setup()
 {
   pinMode(trig, OUTPUT);
   pinMode(eco, INPUT);
-  pinMode(productDown, OUTPUT);
-  pinMode(productUp, OUTPUT);
-  pinMode(pinMotorDown, OUTPUT);
-  pinMode(pinMotorUp, OUTPUT);
+  pinMode(luces, OUTPUT);
+  pinMode(dirPin, OUTPUT);
+  pinMode(enablePin, OUTPUT);
+  pinMode(stepPin, OUTPUT);
+
+
   Serial.begin(9600); // Para ver la distancia, 9600 tasa de comunicacion, cantidad de bits/second
-  digitalWrite(productDown, HIGH);
 }
 
 void loop()
 {
   handClose();
+  // lucesBase();
 }
 
 void handClose()
 {
   // Miramos si hay una mano cerca
-  distance = showDistance();
-  Serial.println(distance);
+  distancia = calcDistancia();
+  // Serial.println(distancia);
   delay(200);
-  if (distance < range)
+  if (distancia < rango)
   {
-    showCount++;
+    contador++;
   }
   else
   {
-    showCount = 0;
+    contador = 0;
   }
 
-  if (showCount > 4)
+  if (contador > 4)
   {
-    changeState();
-    showCount = 0;
+    cambiarEstado();
+    contador = 0;
   }
 }
 
-int showDistance()
+int calcDistancia()
 {
-  int distancia;
+  int distanciaSensor;
   digitalWrite(trig, HIGH);
   delay(1);
   digitalWrite(trig, LOW);
-  pulseDuration = pulseIn(eco, HIGH);
-  distancia = pulseDuration / 58.2; // cte transformacion duracion to distancia
-  if (distancia < 0)
+  duracionPulso = pulseIn(eco, HIGH);
+  distanciaSensor = duracionPulso / 58.2; // cte transformacion duracion to distancia
+  if (distanciaSensor < 0)
   {
-    distancia = 300;
+    distanciaSensor = 300;
   }
 
-  return distancia;
+  return distanciaSensor;
 }
 
-void changeState()
+void cambiarEstado()
 {
-  if (hided)
+  if (escondido)
   {
-    showProduct();
+    subirProducto();
   }
   else
   {
-    hideProduct();
+    bajarProducto();
   }
 }
 
-void showProduct()
+void subirProducto()
 {
   // Subir motor, encender leds del producto
-  digitalWrite(productDown, LOW);
-  motorUp();
-  digitalWrite(productUp, HIGH);
-  hided = false;
-  // faltan las luces pero me la suda luego las pongo
+  digitalWrite(dirPin, HIGH);
+  motor();
+  digitalWrite(luces, HIGH);
+  Serial.println("Estamos arriba");
+  escondido = false;
+  // Igual poner las luces antes, para  que se enciendan abajo y ya esten encendidas mientras sube
 }
 
-void hideProduct()
+void bajarProducto()
 {
   // Bajar motor, apagar leds del producto
-  digitalWrite(productUp, LOW);
-  motorDown();
-  digitalWrite(productDown, HIGH);
-  hided = true;
+  digitalWrite(dirPin, LOW);
+  digitalWrite(luces, LOW);
+  motor();
+  Serial.println("Estamos abajo");
+  escondido = true;
 }
 
-void motorUp()
+void motor()
 {
-  // funcion para mover el motor a arriba
-  digitalWrite(pinMotorUp, HIGH);
-  delay(2000);
-  digitalWrite(pinMotorUp, LOW);
+  for (int i = 0; i < altura; i++)
+  {
+    // These four lines result in 1 step:
+    digitalWrite(stepPin, HIGH);
+    delayMicroseconds(500);
+    digitalWrite(stepPin, LOW);
+    delayMicroseconds(500);
+  }
 }
 
-void motorDown()
+/* void lucesBase()
 {
-  // funcion para mover el motor a abajo
-  digitalWrite(pinMotorDown, HIGH);
-  delay(2000);
-  digitalWrite(pinMotorDown, LOW);
+  if (digitalRead(interruptor) == HIGH)
+  {
+    digitalWrite(rele, HIGH);
+  }
+  else
+  {
+    digitalWrite(rele, LOW);
+  }
 }
+ */
